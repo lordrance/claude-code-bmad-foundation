@@ -11,9 +11,10 @@ coverage/
 .idea/
 .claude/settings.local.json
 
-# BMAD — placeholder; refine after install reveals real paths
-# .bmad-method/cache/
-# .bmad-method/.local/
+# BMAD runtime artifacts — generated per-project, not for the template
+_bmad-output/
+# Defensive against a known installer quirk that may literally create this dir name
+{output_folder}/
 
 # Python (BMAD may use it)
 __pycache__/
