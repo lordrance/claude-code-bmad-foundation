@@ -51,7 +51,29 @@ If both succeed, the safety hook is live.
 
 The template ships with a README that describes the template itself. Replace it with one that describes your new project. Update the LICENSE copyright holder if needed.
 
-### Step 4 — Now choose a stack — but **inside the new project, not back in the template**
+### Step 4 — Configure GitHub settings for the new repo
+
+`Use this template` copies the **files**, but it does **not** carry over these per-repo settings — you have to set them once in the new repo:
+
+| What to set | Why it doesn't carry over | Where in GitHub UI |
+| --- | --- | --- |
+| **Description + topics** | GitHub policy; metadata is per-repo. | About panel (right side of repo main page) → ⚙ |
+| **Branch protection on `main`** (optional for solo, recommended once collaborators join) | Not template-copied. | Settings → Rules → Rulesets → New ruleset |
+| **Secret scanning + Push protection** | Defaults to ON for public repos; verify it is ON if you go private. | Settings → Code security |
+| **Dependabot alerts + security updates** | Defaults vary; turn on explicitly. | Settings → Code security |
+| **Merge prefs** (squash + rebase, no merge commit, delete branch on merge) | Not template-copied. | Settings → General → Pull Requests |
+| **Disable Wiki / Projects** if you do not use them | Defaults to ON. | Settings → General → Features |
+
+For a solo / personal project, you can skip branch protection. For anything you intend to share or take to production, enable at minimum:
+
+- Require a pull request before merging
+- Require status checks (after CI is added)
+- Block force pushes
+- Block deletions
+
+These are the same defaults the **heavyweight sibling repo** (`claude-code-industrial-workbench`) configures automatically — when your project crosses that line, that template is the right move (see [`./decision-bmad-vs-full-workbench.md`](./decision-bmad-vs-full-workbench.md)).
+
+### Step 5 — Now choose a stack — but **inside the new project, not back in the template**
 
 Once you know what you're building (a web app, a CLI tool, a game backend…), add the stack-specific files inside the new project:
 
