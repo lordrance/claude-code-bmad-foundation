@@ -39,6 +39,12 @@ If you're working on a multi-person project, dealing with regulated data, or alr
 
 See [`docs/decision-bmad-vs-full-workbench.md`](./docs/decision-bmad-vs-full-workbench.md) for the full trade-off.
 
+## 5. Attribution
+
+This template includes BMAD-METHOD-generated files from [`bmad-code-org/BMAD-METHOD`](https://github.com/bmad-code-org/BMAD-METHOD). BMAD-METHOD is licensed under MIT. BMad-related names and trademarks (BMad™, BMad Method™, BMAD-METHOD™, BMad Core™) belong to BMad Code, LLC. **This repository is not an official BMAD project** and is not affiliated with, sponsored by, or endorsed by BMad Code, LLC.
+
+The full list of third-party components and the license/trademark scope live in [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md).
+
 ---
 
 License: [MIT](./LICENSE). Not affiliated with, endorsed by, or created by Anthropic, GitHub, Cursor, or Andrej Karpathy.
