@@ -1,0 +1,22 @@
+# General
+node_modules/
+dist/
+build/
+coverage/
+.env
+.env.*
+!.env.example
+.DS_Store
+.vscode/
+.idea/
+.claude/settings.local.json
+
+# BMAD — placeholder; refine after install reveals real paths
+# .bmad-method/cache/
+# .bmad-method/.local/
+
+# Python (BMAD may use it)
+__pycache__/
+*.pyc
+.venv/
+venv/
