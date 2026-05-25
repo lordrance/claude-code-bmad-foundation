@@ -1,0 +1,16 @@
+{
+  "_comment": "Lightweight settings — registers the single dangerous-command guard hook. BMAD does NOT manage this file; we own it.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/block_dangerous_commands.py"
+          }
+        ]
+      }
+    ]
+  }
+}
