@@ -9,6 +9,8 @@ This is a **base template**, not an application. It has no business code, no tec
 - A Karpathy-style [`CLAUDE.md`](./CLAUDE.md) — the same 60-line behavioral baseline used in the upstream project, plus one beginner-friendly sentence.
 - Basic project hygiene: [`.gitignore`](./.gitignore), [`.gitattributes`](./.gitattributes), [`.editorconfig`](./.editorconfig), [`LICENSE`](./LICENSE) (MIT).
 - A single safety hook: `.claude/hooks/block_dangerous_commands.py` — prevents Claude from running `rm -rf`, reading `.env`, force-pushing, etc.
+- One pre-wired MCP server in [`.mcp.json`](./.mcp.json): **Context7** — fetches live, version-specific docs for hundreds of libraries so Claude doesn't hallucinate stale APIs. Free tier, no API key needed.
+- GitHub PR + Issue templates in [`.github/`](./.github/) — language-agnostic, keeps contributions structured.
 - **BMAD-METHOD installed on top** — provides the PM / Architect / Developer / QA workflow and 12+ specialized agents.
 - Two short docs in `docs/` explaining how to use the template and how it relates to the heavyweight sibling repo.
 

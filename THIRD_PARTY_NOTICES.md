@@ -38,10 +38,21 @@ Everything **outside** the BMAD-generated paths above — namely:
 - `.gitignore`, `.gitattributes`, `.editorconfig`, `README.md`, `LICENSE`
 - `.claude/hooks/block_dangerous_commands.py`
 - `.claude/settings.json`
+- `.claude/commands/loop.md`
+- `.mcp.json` (references the external Context7 MCP server; see below)
+- `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/*.md`
 - `docs/usage.md`, `docs/decision-bmad-vs-full-workbench.md`
 - this `THIRD_PARTY_NOTICES.md`
 
 — is original to this repository and is licensed under the [MIT License](./LICENSE) by `lordrance`.
+
+## External MCP servers referenced (not bundled)
+
+`.mcp.json` declares one external MCP server that Claude Code spawns on demand via `npx`. Its source code is **fetched at runtime** by `npx`; nothing from these projects is committed in this repository.
+
+- **Context7 MCP** (`@upstash/context7-mcp`) — developed by Upstash, MIT-licensed. Source: https://github.com/upstash/context7
+
+Removing or replacing this server is a one-line edit to `.mcp.json` and is expected; the template just provides a reasonable default.
 
 ## Other upstream materials
 

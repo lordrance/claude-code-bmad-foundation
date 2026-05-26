@@ -9,7 +9,9 @@ This template is the **base layer** for new Claude Code projects. It is **not** 
 | [`CLAUDE.md`](../CLAUDE.md) | Karpathy-style 60-line behavioral baseline + one beginner sentence. Loaded by Claude Code on every session. |
 | `.gitignore` / `.gitattributes` / `.editorconfig` / `LICENSE` | Basic hygiene. Cross-OS line endings, common ignore patterns, MIT license. |
 | `.claude/hooks/block_dangerous_commands.py` | Blocks Claude from running `rm -rf`, force-pushing, reading `.env` / private keys, printing secret env vars. |
-| `.claude/settings.json` | Registers the hook above. |
+| `.claude/settings.json` | Registers the hook above and pre-approves ~80 read-mostly / build / test commands. |
+| `.mcp.json` | Pre-wires the [**Context7**](https://github.com/upstash/context7) MCP server. Claude can fetch live, version-specific docs for hundreds of libraries (React, Next.js, FastAPI, Django, …) instead of hallucinating old APIs. Free tier needs no key; just works on first session. |
+| `.github/` | PR + Issue templates (`PULL_REQUEST_TEMPLATE.md`, `ISSUE_TEMPLATE/bug_report.md`, `ISSUE_TEMPLATE/feature_request.md`) so contributions follow a structure. Language-agnostic. |
 | **BMAD-METHOD** (installed at template-init time) | Provides the PM / Architect / Developer / QA / UX agents and the SDLC workflow that takes a feature from idea → PRD → architecture → stories → code → QA. |
 | `docs/` (this folder) | The two documents you are reading right now. |
 
@@ -226,9 +228,13 @@ Less clicking = less per-step inspection. The hook catches **destructive** ops; 
 
 For the first BMAD cycle on any new project, prefer **default** mode until you trust the agent's judgment in your specific stack and domain. Then graduate to `acceptEdits` (default after derive) and eventually `bypassPermissions` for routine cycles.
 
-## 5. When to add wshobson/agents
+## 5. Graduation tools — what to add later, NOT on day 1
 
-Don't add it on day 1. Add it when **all three** are true:
+The template ships with a deliberately small tool surface so Claude's decisions stay focused. Two things are worth adding **after** the project outgrows the defaults — but installing them too early just adds noise.
+
+### 5.1 — `wshobson/agents` (when BMAD has a gap)
+
+Add it when **all three** are true:
 
 1. You've done at least one full BMAD cycle on the project.
 2. You've identified a specific gap BMAD doesn't cover well (e.g. "I need a deep refactor specialist", "I need an SEO-focused content writer", "I need a SQL query optimizer").
@@ -242,6 +248,29 @@ Then:
 ```
 
 Install **one plugin at a time**. Claude's tool list gets noisy fast, and noise reduces decision quality.
+
+### 5.2 — `CodeGraph` (when the project gets large)
+
+[CodeGraph](https://github.com/colbymchenry/codegraph) is a local code-intelligence MCP. It pre-indexes your source into an AST knowledge graph (tree-sitter → local SQLite + FTS5), so Claude answers "where is X defined / what calls Y" by querying the index in a few calls instead of fanning out across grep / find / Read across dozens of files.
+
+Add it when **all three** are true:
+
+1. Your project has roughly **>1000 source files** — under that, plain grep is fast enough and the index is overhead.
+2. You notice Claude burning many tool calls on code-navigation questions (not on writing new code, where Context7 already helps).
+3. You're willing to keep one more local index running. CodeGraph re-syncs on file changes via native OS file watchers — usually invisible.
+
+Reported median impact across real codebases (upstream benchmarks): **~59% fewer tokens, ~49% faster, ~70% fewer tool calls**. The headline 52→3 tool-call number in promo material is from a ~4000-file project — small projects see much smaller wins, which is why this is **not** installed by default.
+
+Follow the install instructions at the upstream repo. It is MIT-licensed, runs 100% locally, needs no API key, and supports 19+ languages.
+
+### Why these are NOT bundled
+
+CodeGraph and `wshobson/agents` are valuable, but their value scales with project size or with specific gaps you've already felt. Installing them on an empty template means:
+
+- More MCP tools / agents in Claude's tool list from day 1 → harder to pick the right tool, more tokens spent describing the surface.
+- A maintenance surface (indexes, plugin updates) before there's anything to maintain.
+
+The template's job is to **ship you to the starting line**. Add these the first time you feel the pain they solve.
 
 ## 6. Why SuperClaude is intentionally NOT installed
 
