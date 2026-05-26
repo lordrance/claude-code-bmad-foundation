@@ -146,7 +146,87 @@ git commit -m "feat(story-1.1): implement <thing>"
 
 This is the cycle. PRD → architecture → stories → dev → QA → commit → next story. Slower than vibe-coding, dramatically higher hit rate on the first try.
 
-## 4. When to add wshobson/agents
+## 4. Auto-pilot mode: low-friction execution
+
+The default settings in this template are configured to **minimize confirmation clicks** without losing the safety floor. Three things make this work:
+
+### 4.1 — `defaultMode: "acceptEdits"`
+
+Set in [`.claude/settings.json`](../.claude/settings.json). File edits (Edit / Write / NotebookEdit) are auto-approved. You can still toggle modes mid-session with **Shift+Tab**:
+
+| Mode | Behavior | When to use |
+| --- | --- | --- |
+| `default` | Every Bash / PowerShell call asks | Touching anything sensitive |
+| **`acceptEdits`** (this template's default) | File edits auto, shell asks unless on allowlist | Everyday coding |
+| `bypassPermissions` | Everything auto except what the hook blocks | Strong autonomous runs; trust the hook completely |
+
+### 4.2 — Pre-approved command allowlist
+
+[`.claude/settings.json → permissions.allow`](../.claude/settings.json) pre-approves ~80 read-mostly and build/test/format/git-local commands. Categories:
+
+- **Read-only filesystem**: `ls`, `cat`, `head`, `tail`, `find`, `grep`, `wc`, `tree`, …
+- **Git inspection + local-safe**: `git status / diff / log / show / branch / add / commit / fetch / checkout / restore / stash / tag`
+- **Node ecosystem**: `npm test / lint / typecheck / build / dev`, `pnpm` equivalents, `npx prettier / eslint / tsc / vitest / jest / playwright`
+- **Python ecosystem**: `pytest`, `ruff`, `mypy`, `black`, `isort`, `uv run / sync / lock`
+- **Go ecosystem**: `go test / build / vet`, `gofmt`, `golangci-lint`
+- **Rust ecosystem**: `cargo build / test / check / clippy / fmt`
+- **BMAD scripts**: `python _bmad/scripts/*`, `npx bmad-method *`
+- **gh CLI read-only**: `gh repo view / pr view / pr list / run view / api repos/*`
+- **PowerShell read-only**: `Get-*`, `Test-Path`, `ConvertFrom-Json`, etc.
+
+Plus a **deny list** that overrides allow for the truly destructive: `git push --force`, `git reset --hard`, `git clean -fd`, `git branch -D`, `gh repo delete`, `npm publish`, …
+
+### 4.3 — Safety floor never disappears
+
+[`.claude/hooks/block_dangerous_commands.py`](../.claude/hooks/block_dangerous_commands.py) runs on **every** Bash / PowerShell call, regardless of allowlist or mode. It blocks:
+
+- `rm -rf` and equivalents
+- `git push --force` (in any form)
+- `git reset --hard`, `git clean -fd`, `git branch -D`
+- Reading `.env` / `.env.*` / `*.pem` / `*.key`
+- Printing `$SECRET` / `$TOKEN` / `$API_KEY` / `$GITHUB_TOKEN` style env vars
+
+So even in `bypassPermissions` mode, these can't slip through.
+
+### 4.4 — `/loop` slash command: one-shot Dev ↔ Review cycle
+
+Defined in [`.claude/commands/loop.md`](../.claude/commands/loop.md). Invoke from any Claude Code session:
+
+```
+/loop story-1.1
+```
+
+(or `/loop "make the login form accept passkeys"` for an ad-hoc task)
+
+What `/loop` does in **one continuous response** without stopping for your input:
+
+1. **Dev** phase — uses the `bmad-dev-story` skill to implement
+2. **Review** phase — uses the `bmad-code-review` skill to strictly inspect
+3. **Apply** phase — uses `bmad-correct-course` to fix what review found
+4. Loop back to step 2 until review finds 0 issues OR 3 cycles elapse
+5. Produce **one** final report at the end
+
+You read one summary at the end instead of typing `@qa`, `@dev`, `@qa`, `@dev`. If a decision genuinely needs your judgment (e.g. "should this be a public API?"), `/loop` collects all such questions at the end of the report so you answer them **all at once**, not interleaved with code changes.
+
+### 4.5 — When to back off from auto-pilot
+
+Switch back to `default` mode (Shift+Tab) when you are about to:
+
+- Touch authentication / authorization code
+- Write database migrations on tables with real data
+- Modify payment / billing logic
+- Edit production-touching infra-as-code
+- Make irreversible API contract changes
+
+The hook still wouldn't let you nuke files, but a sensitive logic change benefits from per-step pause to think.
+
+### 4.6 — Trade-off, stated honestly
+
+Less clicking = less per-step inspection. The hook catches **destructive** ops; it does **not** catch **wrong** ones. A `/loop` run that converges to "QA found 0 issues" can still produce code that satisfies the wrong requirement. **Read the final report.** If it touched files you didn't expect, that's the signal to roll back.
+
+For the first BMAD cycle on any new project, prefer **default** mode until you trust the agent's judgment in your specific stack and domain. Then graduate to `acceptEdits` (default after derive) and eventually `bypassPermissions` for routine cycles.
+
+## 5. When to add wshobson/agents
 
 Don't add it on day 1. Add it when **all three** are true:
 
@@ -163,7 +243,7 @@ Then:
 
 Install **one plugin at a time**. Claude's tool list gets noisy fast, and noise reduces decision quality.
 
-## 5. Why SuperClaude is intentionally NOT installed
+## 6. Why SuperClaude is intentionally NOT installed
 
 SuperClaude is a popular alternative framework that injects its own `CLAUDE.md` and instruction files into `~/.claude/`. Two problems with installing it on top of this template:
 
@@ -172,7 +252,7 @@ SuperClaude is a popular alternative framework that injects its own `CLAUDE.md` 
 
 Choose one or the other, not both. This template's choice is BMAD.
 
-## 6. Things this template will not solve for you
+## 7. Things this template will not solve for you
 
 To be honest about scope:
 
@@ -183,6 +263,6 @@ To be honest about scope:
 
 These four are the Tier 3 gaps. They will land in a future revision of the heavyweight workbench, not here.
 
-## 7. One-line summary
+## 8. One-line summary
 
 **This template ships you to the starting line; BMAD coaches you through the race; you finish projects faster than building from zero each time.**
