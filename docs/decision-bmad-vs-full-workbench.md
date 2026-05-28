@@ -20,10 +20,13 @@ If you're not sure: **start with this template**. Migrating to the heavyweight w
 - Karpathy `CLAUDE.md`
 - Basic hygiene: `.gitignore`, `.gitattributes`, `.editorconfig`, `LICENSE`
 - One safety hook: `block_dangerous_commands.py`
+- **Context7 MCP** pre-wired (live library docs)
+- **Playwright pre-staged** (`package.json` + `playwright.config.ts` + `e2e/example.spec.ts`, skipped by default; activate with `pnpm install`)
+- **Dependabot config** (npm-only, weekly; tracks Playwright)
 - **BMAD-METHOD** installed on top (provides PM / Architect / Dev / QA agents + SDLC workflow)
 - Two short docs
 
-Approximately **15-25 files** total before you start writing project code.
+Approximately **20-30 files** total before you start writing project code.
 
 ## What the heavyweight workbench has on top of that
 
@@ -77,7 +80,7 @@ You do not need to abandon BMAD or change CLAUDE.md to migrate. The lightweight 
 Less common but valid: a heavyweight project that turned out to be solo / experimental / never shipping.
 
 1. Delete `.github/workflows/` except `ci.yml`.
-2. Delete `.github/CODEOWNERS`, `.github/dependabot.yml`, `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md`.
+2. Delete `.github/CODEOWNERS` (the lightweight template keeps `.github/dependabot.yml`, `.github/ISSUE_TEMPLATE/`, and `.github/pull_request_template.md`, so don't delete those).
 3. Disable the branch protection ruleset in GitHub Settings → Rules.
 4. Delete `docs/observability/`, `feature-flags/`, `reliability/`, `release/`, `security/`, `ai-governance/`.
 5. Delete `.specify/`, `specs/`, `evals/`, `presets/`, `.claude/agents/`, `.claude/skills/`, `.claude/mcp.policy.*`, `.claude/models.policy.md`.

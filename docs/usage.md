@@ -12,6 +12,7 @@ This template is the **base layer** for new Claude Code projects. It is **not** 
 | `.claude/settings.json` | Registers the hook above and pre-approves ~80 read-mostly / build / test commands. |
 | `.mcp.json` | Pre-wires the [**Context7**](https://github.com/upstash/context7) MCP server. Claude can fetch live, version-specific docs for hundreds of libraries (React, Next.js, FastAPI, Django, …) instead of hallucinating old APIs. Free tier needs no key; just works on first session. |
 | `.github/` | PR + Issue templates (`PULL_REQUEST_TEMPLATE.md`, `ISSUE_TEMPLATE/bug_report.md`, `ISSUE_TEMPLATE/feature_request.md`) so contributions follow a structure. Language-agnostic. |
+| `package.json` + `playwright.config.ts` + `e2e/` | **Playwright pre-staged** for frontend end-to-end tests. Run `pnpm install && pnpm e2e:install` to activate (one Chromium download). The placeholder spec is `test.skip`'d, so `pnpm e2e` passes on an empty template. If your project is backend-only / CLI-only, delete these three files. |
 | **BMAD-METHOD** (installed at template-init time) | Provides the PM / Architect / Developer / QA / UX agents and the SDLC workflow that takes a feature from idea → PRD → architecture → stories → code → QA. |
 | `docs/` (this folder) | The two documents you are reading right now. |
 
@@ -83,6 +84,18 @@ Once you know what you're building (a web app, a CLI tool, a game backend…), a
 - Python project: add `pyproject.toml` + `uv` or `poetry` lockfile
 - Go project: `go mod init`
 - Etc.
+
+**[Playwright](https://playwright.dev/) is pre-installed** for end-to-end browser tests. Unit tests (Vitest / Jest / Testing Library) cover component logic but can't test real browser navigation, route guards, route loaders, or cross-page flows — that's Playwright's job. Activate it once per derived project:
+
+```bash
+pnpm install              # installs @playwright/test
+pnpm e2e:install          # downloads Chromium (~50 MB, one-time)
+pnpm e2e                  # runs the (skipped) example spec — should pass clean
+```
+
+Once your app runs on `http://localhost:5173` (or change the `baseURL` in `playwright.config.ts`), unskip the example in `e2e/example.spec.ts` and write more specs alongside it. The BMAD `bmad-qa-generate-e2e-tests` skill generates Playwright specs against this layout.
+
+**Backend-only / CLI-only project?** Delete `package.json`, `playwright.config.ts`, and `e2e/` — they're staged for the common case, not mandatory.
 
 The template intentionally does not pick this for you. Different projects need different stacks.
 
@@ -281,7 +294,15 @@ SuperClaude is a popular alternative framework that injects its own `CLAUDE.md` 
 
 Choose one or the other, not both. This template's choice is BMAD.
 
-## 7. Things this template will not solve for you
+## 7. Multi-agent work — try Agent Teams first
+
+When you need multiple Claude sessions to coordinate (parallel research, supervisor / worker patterns, durable state across sessions), reach for [**Claude Code Agent Teams**](https://code.claude.com/docs/en/agent-teams) first. It is Anthropic's native primitive for the job — currently experimental, enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in `~/.claude/settings.json`. No extra install, no extra framework, just a setting toggle.
+
+For most projects at this template's scope you may not even need that — BMAD's `@agent` chain (PM → Architect → Dev → QA) already covers sequential multi-agent coordination, and the sequential version is usually enough.
+
+Heavier orchestration frameworks (DAG control, durable workflow state at team / production scale) become worth their overhead later — when you cross that line, graduate to [`claude-code-industrial-workbench`](https://github.com/lordrance/claude-code-industrial-workbench).
+
+## 8. Things this template will not solve for you
 
 To be honest about scope:
 
@@ -292,6 +313,6 @@ To be honest about scope:
 
 These four are the Tier 3 gaps. They will land in a future revision of the heavyweight workbench, not here.
 
-## 8. One-line summary
+## 9. One-line summary
 
 **This template ships you to the starting line; BMAD coaches you through the race; you finish projects faster than building from zero each time.**

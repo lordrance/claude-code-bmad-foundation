@@ -60,6 +60,14 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## 5. Use Installed Tools Before Going to Memory
+
+**This template pre-installs tools to compensate for training-data drift. Use them before relying on what you "know".**
+
+- **Context7 MCP** (wired in `.mcp.json`): before writing code that uses any library, framework, or SDK (React, FastAPI, Prisma, Tailwind, etc.), fetch current docs via `mcp__context7__resolve-library-id` then `mcp__context7__query-docs`. Do this even for libraries you recognize — your training data may be months stale and APIs drift.
+- **`/loop` slash command**: for full story implementation, prefer `/loop <story-id>` over manual dev → review back-and-forth. It runs dev → review → fix cycles in one continuous response and only stops to ask you the questions that genuinely need judgment.
+- **`bmad-code-review`**: when possible, launch via the `Agent` tool with a different model (e.g. `subagent_type: code-reviewer` on Haiku) rather than self-reviewing in the same session — same-model self-review compounds the implementer's blind spots.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
