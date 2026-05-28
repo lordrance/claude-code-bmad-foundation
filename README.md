@@ -6,19 +6,22 @@ This is a **base template**, not an application. It has no business code, no tec
 
 ## 1. What this is
 
-- A Karpathy-style [`CLAUDE.md`](./CLAUDE.md) — the same 60-line behavioral baseline used in the upstream project, plus one beginner-friendly sentence.
+- A Karpathy-style [`CLAUDE.md`](./CLAUDE.md) — the upstream behavioral baseline plus a short section telling Claude to use the template's installed tools (Context7, /loop, different-model code review) before training memory.
 - Basic project hygiene: [`.gitignore`](./.gitignore), [`.gitattributes`](./.gitattributes), [`.editorconfig`](./.editorconfig), [`LICENSE`](./LICENSE) (MIT).
 - A single safety hook: `.claude/hooks/block_dangerous_commands.py` — prevents Claude from running `rm -rf`, reading `.env`, force-pushing, etc.
 - One pre-wired MCP server in [`.mcp.json`](./.mcp.json): **Context7** — fetches live, version-specific docs for hundreds of libraries so Claude doesn't hallucinate stale APIs. Free tier, no API key needed.
+- **Playwright pre-staged** for frontend end-to-end tests: [`package.json`](./package.json), [`playwright.config.ts`](./playwright.config.ts), and [`e2e/example.spec.ts`](./e2e/example.spec.ts) (`test.skip`'d placeholder). Activate per derived project via `pnpm install && pnpm e2e:install`. If your project is backend-only or CLI-only, delete these three files.
 - GitHub PR + Issue templates in [`.github/`](./.github/) — language-agnostic, keeps contributions structured.
 - **BMAD-METHOD installed on top** — provides the PM / Architect / Developer / QA workflow and 12+ specialized agents.
 - Two short docs in `docs/` explaining how to use the template and how it relates to the heavyweight sibling repo.
 
+**Prerequisites:** [Node 18+](https://nodejs.org/) and [pnpm](https://pnpm.io/installation) (`npm install -g pnpm`) are required to activate Playwright. If you'll never need a frontend, you can skip both and delete the Playwright files (see above).
+
 ## 2. What is NOT in here (by design)
 
-- No `package.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, `Cargo.toml`, `pom.xml`, or any other concrete-stack manifest.
-- No `Dockerfile`, Terraform, Kubernetes, or framework configs (vite/next/jest/pytest/etc.).
-- No `src/`, `app/`, `server/`, `client/` — no source code skeleton.
+- No application-stack manifest (`pyproject.toml`, `requirements.txt`, `go.mod`, `Cargo.toml`, `pom.xml`, etc.) — the only `package.json` is the minimal one that pulls in Playwright as a devDependency.
+- No `Dockerfile`, Terraform, Kubernetes, or app-framework configs (vite/next/jest/pytest/etc.) — `playwright.config.ts` is the only framework config and is opt-out (delete it for non-frontend projects).
+- No `src/`, `app/`, `server/`, `client/` — no source code skeleton. (`e2e/` is the Playwright test directory, not application code.)
 - No CI / security / supply-chain workflows. Those live in the heavyweight sibling repo: [`claude-code-industrial-workbench`](https://github.com/lordrance/claude-code-industrial-workbench).
 - No SuperClaude, no wshobson/agents — not installed by default to keep Claude's tool surface focused.
 - No homemade SDLC workflow (specs/, .specify/, custom skills, custom subagents) — BMAD owns this layer.
