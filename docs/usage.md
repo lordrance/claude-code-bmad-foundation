@@ -10,8 +10,9 @@ This template is the **base layer** for new Claude Code projects. It is **not** 
 | `.gitignore` / `.gitattributes` / `.editorconfig` / `LICENSE` | Basic hygiene. Cross-OS line endings, common ignore patterns, MIT license. |
 | `.claude/hooks/block_dangerous_commands.py` | Blocks Claude from running `rm -rf`, force-pushing, reading `.env` / private keys, printing secret env vars. |
 | `.claude/settings.json` | Registers the hook above and pre-approves ~80 read-mostly / build / test commands. |
-| `.mcp.json` | Pre-wires the [**Context7**](https://github.com/upstash/context7) MCP server. Claude can fetch live, version-specific docs for hundreds of libraries (React, Next.js, FastAPI, Django, …) instead of hallucinating old APIs. Free tier needs no key; just works on first session. |
+| `.mcp.json` | Pre-wires two MCP servers: **[Context7](https://github.com/upstash/context7)** (live, version-specific docs for hundreds of libraries — React, Next.js, FastAPI, Django, … — so Claude doesn't hallucinate old APIs) and **[Sequential Thinking](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking)** (Anthropic-maintained MCP for structured multi-step reasoning, complements BMAD's planning chain). Both are free, need no API key, and start on first session. |
 | `.github/` | PR + Issue templates (`PULL_REQUEST_TEMPLATE.md`, `ISSUE_TEMPLATE/bug_report.md`, `ISSUE_TEMPLATE/feature_request.md`) so contributions follow a structure. Language-agnostic. |
+| [`scripts/health-check.py`](../scripts/health-check.py) | **Self-verification script.** Cross-platform Python (no deps). Run `python scripts/health-check.py` after deriving the template, or anytime later, to confirm core files exist, JSON parses, MCP entries are declared, Playwright is staged, BMad is installed, runtime tools (Node/pnpm/npx/git) are on PATH, and the safety hook compiles. Exit code 0 = green, 1 = at least one FAIL. |
 | `package.json` + `playwright.config.ts` + `e2e/` | **Playwright pre-staged** for frontend end-to-end tests. Run `pnpm install && pnpm e2e:install` to activate (one Chromium download). The placeholder spec is `test.skip`'d, so `pnpm e2e` passes on an empty template. If your project is backend-only / CLI-only, delete these three files. |
 | **BMAD-METHOD** (installed at template-init time) | Provides the PM / Architect / Developer / QA / UX agents and the SDLC workflow that takes a feature from idea → PRD → architecture → stories → code → QA. |
 | `docs/` (this folder) | The two documents you are reading right now. |
@@ -40,15 +41,14 @@ gh repo create lordrance/<your-new-project> \
 cd <your-new-project>
 ```
 
-### Step 2 — Clone and verify the hook is registered
+### Step 2 — Clone and run the health check
 
 ```bash
 cd <your-new-project>
-python -m py_compile .claude/hooks/block_dangerous_commands.py   # should be silent
-python -m json.tool .claude/settings.json                         # should print the JSON
+python scripts/health-check.py
 ```
 
-If both succeed, the safety hook is live.
+This single command verifies ~20 things at once: every core file exists, every JSON parses, both MCP entries are declared, Playwright is staged, BMad is installed, all runtime tools (Python, Git, Node, pnpm, npx) are on PATH, and the safety hook compiles. End-of-output is a colored summary; **exit code 0 means green to proceed**. If you see any `FAIL` line, fix that first before touching anything else.
 
 ### Step 3 — Update README and LICENSE for the new project
 
@@ -241,11 +241,28 @@ Less clicking = less per-step inspection. The hook catches **destructive** ops; 
 
 For the first BMAD cycle on any new project, prefer **default** mode until you trust the agent's judgment in your specific stack and domain. Then graduate to `acceptEdits` (default after derive) and eventually `bypassPermissions` for routine cycles.
 
-## 5. Graduation tools — what to add later, NOT on day 1
+## 5. Memory — where each kind of context lives
+
+Claude Code projects accumulate three different kinds of "memory," and they live in three different places. Knowing which lives where avoids the common bug of "I wrote X down somewhere, where did it go?"
+
+| Layer | Where it lives | What goes there | Survives `git clone` to a new machine? |
+| --- | --- | --- | --- |
+| **User-level auto-memory** | `~/.claude/projects/<project>/memory/` (your home dir) | Claude's own notes about you, your preferences, your role, project-specific feedback. Written automatically by Claude during sessions per `auto memory` rules in [`CLAUDE.md`](../CLAUDE.md). | ❌ No — local to your home dir, not in the repo. |
+| **Planning artifacts** | `docs/planning-artifacts/<type>/` (in the repo) | BMAD's structured outputs: briefs, PRDs, UX docs, architecture, epics, stories, readiness reports. Written by BMAD skills (`bmad-create-prd`, `bmad-create-architecture`, etc.). | ✅ Yes — committed to the repo, follows it everywhere. |
+| **Implementation artifacts** | `docs/implementation-artifacts/` (in the repo) | Sprint plans, sprint status YAML, per-story files, retrospective notes. Written by `bmad-sprint-planning`, `bmad-dev-story`, `bmad-retrospective`. | ✅ Yes — committed to the repo. |
+
+**Rule of thumb:**
+- If it's about **you** (your role, your preferences, feedback you've given) → user-level auto-memory handles it. Don't duplicate it in the repo.
+- If it's about **the project's intent** (PRD, architecture, decisions) → BMAD writes it to `docs/planning-artifacts/`. Commit it.
+- If it's about **what was built** (story files, sprint progress) → BMAD writes it to `docs/implementation-artifacts/`. Commit it.
+
+You generally don't write any of these by hand — Claude / BMAD do it for you. Your job is to let them, and to commit the results.
+
+## 6. Graduation tools — what to add later, NOT on day 1
 
 The template ships with a deliberately small tool surface so Claude's decisions stay focused. Two things are worth adding **after** the project outgrows the defaults — but installing them too early just adds noise.
 
-### 5.1 — `wshobson/agents` (when BMAD has a gap)
+### 6.1 — `wshobson/agents` (when BMAD has a gap)
 
 Add it when **all three** are true:
 
@@ -262,7 +279,7 @@ Then:
 
 Install **one plugin at a time**. Claude's tool list gets noisy fast, and noise reduces decision quality.
 
-### 5.2 — `CodeGraph` (when the project gets large)
+### 6.2 — `CodeGraph` (when the project gets large)
 
 [CodeGraph](https://github.com/colbymchenry/codegraph) is a local code-intelligence MCP. It pre-indexes your source into an AST knowledge graph (tree-sitter → local SQLite + FTS5), so Claude answers "where is X defined / what calls Y" by querying the index in a few calls instead of fanning out across grep / find / Read across dozens of files.
 
@@ -285,7 +302,7 @@ CodeGraph and `wshobson/agents` are valuable, but their value scales with projec
 
 The template's job is to **ship you to the starting line**. Add these the first time you feel the pain they solve.
 
-## 6. Why SuperClaude is intentionally NOT installed
+## 7. Why SuperClaude is intentionally NOT installed
 
 SuperClaude is a popular alternative framework that injects its own `CLAUDE.md` and instruction files into `~/.claude/`. Two problems with installing it on top of this template:
 
@@ -294,7 +311,7 @@ SuperClaude is a popular alternative framework that injects its own `CLAUDE.md` 
 
 Choose one or the other, not both. This template's choice is BMAD.
 
-## 7. Multi-agent work — try Agent Teams first
+## 8. Multi-agent work — try Agent Teams first
 
 When you need multiple Claude sessions to coordinate (parallel research, supervisor / worker patterns, durable state across sessions), reach for [**Claude Code Agent Teams**](https://code.claude.com/docs/en/agent-teams) first. It is Anthropic's native primitive for the job — currently experimental, enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in `~/.claude/settings.json`. No extra install, no extra framework, just a setting toggle.
 
@@ -302,7 +319,7 @@ For most projects at this template's scope you may not even need that — BMAD's
 
 Heavier orchestration frameworks (DAG control, durable workflow state at team / production scale) become worth their overhead later — when you cross that line, graduate to [`claude-code-industrial-workbench`](https://github.com/lordrance/claude-code-industrial-workbench).
 
-## 8. Things this template will not solve for you
+## 9. Things this template will not solve for you
 
 To be honest about scope:
 
@@ -313,6 +330,6 @@ To be honest about scope:
 
 These four are the Tier 3 gaps. They will land in a future revision of the heavyweight workbench, not here.
 
-## 9. One-line summary
+## 10. One-line summary
 
 **This template ships you to the starting line; BMAD coaches you through the race; you finish projects faster than building from zero each time.**
